@@ -283,7 +283,6 @@ export class ComponentService {
           }
         }
       } catch (e) {
-        if (e.code === 'MODULE_NOT_FOUND') return;
         this.logger.warn(`Error loading config of ${name}, e=${JSON.stringify(e)}`);
       }
 

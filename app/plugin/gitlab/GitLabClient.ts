@@ -204,4 +204,10 @@ export class GitLabClient extends HostingClientBase<GitLabConfig, Gitlab> {
     });
     return new Promise(() => { });
   }
+
+  public async listPullRequestFiles(num: number): Promise<any[]> {
+    // TODO
+    this.logger.info(num);
+    return [];
+  }
 }

@@ -16,7 +16,7 @@ import { HostingClientBase } from '../../basic/HostingPlatform/HostingClientBase
 import { parseRepoName, ParseDate, waitUntil } from '../../basic/Utils';
 import Octokit = require('@octokit/rest');
 import { CheckRun, CreatePullRequestOption, RepoDir, RepoFile } from '../../basic/DataTypes';
-import { Application } from 'egg';
+import { Application, Context } from 'egg';
 import { DataCat } from 'github-data-cat';
 import { RepoDataService } from '../../basic/HostingPlatform/HostingClientService/RepoDataService';
 import { GitHubConfig } from './GitHubConfig';
@@ -35,6 +35,11 @@ export class GitHubClient extends HostingClientBase<GitHubConfig, Octokit> {
     this.repoName = parseRepoName(name);
     ({ owner: this.owner, repo: this.repo } = this.repoName);
     this.dataCat = dataCat;
+    this.app.github.get(name, async (ctx: Context, next: any) => {
+      ctx.body = this.getData().getRepoData();
+      ctx.status = 200;
+      await next();
+    });
   }
 
   protected async updateData(): Promise<void> {
@@ -223,6 +228,7 @@ export class GitHubClient extends HostingClientBase<GitHubConfig, Octokit> {
   }
 
   public async addLabels(number: number, labels: string[]): Promise<void> {
+    if (labels.length === 0) return;
     await this.rawClient.issues.addLabels({
       ...this.repoName,
       issue_number: number,
@@ -317,6 +323,13 @@ export class GitHubClient extends HostingClientBase<GitHubConfig, Octokit> {
   public async createOrUpdateFile(filePath: string, content: string, commitMessgae: string, branchName: string, cb?: () => void): Promise<void> {
     this.logger.info('createOrUpdateFile:', filePath);
     const content64 = Buffer.from(content).toString('base64');
+
+    // need to get file first, if exist, need to pass sha in
+    const originFile = await this.getFileContent(filePath);
+    let sha: string | undefined;
+    if (originFile) {
+      sha = originFile.sha;
+    }
     await this.rawClient.repos.createOrUpdateFile({
       repo: this.repo,
       owner: this.owner,
@@ -324,6 +337,7 @@ export class GitHubClient extends HostingClientBase<GitHubConfig, Octokit> {
       message: commitMessgae,
       path: filePath,
       branch: branchName,
+      sha,
     });
 
     if (cb) {
@@ -342,6 +356,17 @@ export class GitHubClient extends HostingClientBase<GitHubConfig, Octokit> {
       title: option.title,
       body: option.body,
     });
+  }
+
+  public async listPullRequestFiles(num: number): Promise<any[]> {
+    // TODO
+    const res = await this.rawClient.pulls.listFiles({
+      owner: this.owner,
+      repo: this.repo,
+      pull_number: num,
+      per_page: 100,
+    });
+    return res.data;
   }
 
 }

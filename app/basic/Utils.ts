@@ -137,7 +137,7 @@ export function loggerWrapper(logger: EggLogger, prefix: string | (() => string)
   };
 }
 
-export function waitUntil(func: () => boolean, options?: object): Promise<void> {
+export function waitUntil(func: () => Promise<boolean> | boolean, options?: object): Promise<void> {
   return waitFor(func, Object.assign({ interval: 1000 }, options));
 }
 

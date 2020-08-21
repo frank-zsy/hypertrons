@@ -8,9 +8,9 @@
     "declarations": true
   },
   "scripts": {
-    "start": "tsc && egg-scripts start --daemon --title=egg-server-hypertrons",
+    "start": "tsc && egg-scripts start --daemon --title=egg-server-hypertrons --port=9238 --workers=1",
     "stop": "egg-scripts stop --title=egg-server-hypertrons",
-    "dev": "egg-bin dev",
+    "dev": "egg-bin dev --port=9238",
     "debug": "egg-bin debug",
     "test-local": "egg-bin test",
     "test": "npm run lint -- --fix && npm run cov && npm run tsc && npm run md-lint && npm run license-check",
@@ -58,6 +58,8 @@
     "p-wait-for": "^3.1.0",
     "pope": "^2.0.2",
     "reflect-metadata": "^0.1.13",
+    "requestretry": "^4.1.1",
+    "require-from-string": "^2.0.2",
     "smee-client": "^1.1.0",
     "svgdom": "0.0.21",
     "vfile-reporter": "^6.0.0",

@@ -56,3 +56,27 @@ local wrap = function(f)
   local co = coroutine.create(f)
   coroutine.resume(co)
 end
+
+local tablelength = function(t)
+  local count = 0
+  for _ in pairs(t) do count = count + 1 end
+  return count
+end
+
+local tableUnique = function(t, bArray)
+    local check = {}
+    local n = {}
+    local idx = 1
+    for k, v in pairs(t) do
+        if not check[v] then
+            if bArray then
+                n[idx] = v
+                idx = idx + 1
+            else
+                n[k] = v
+            end
+            check[v] = true
+        end
+    end
+    return n
+end

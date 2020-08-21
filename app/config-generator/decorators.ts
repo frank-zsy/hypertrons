@@ -25,7 +25,7 @@ interface ConfigPropertyMetaData {
   name?: string;
   description: string;
   defaultValue: any;
-  type?: 'string' | 'number' | 'object' | 'boolean' | 'array' | 'enum' | 'cron' | 'object' | 'render_string';
+  type?: 'string' | 'number' | 'object' | 'boolean' | 'array' | 'enum' | 'cron' | 'object' | 'render_string' | 'any';
   scope?: 'public' | 'private';
   optional?: boolean;
   isValid?: (v: any) => boolean;

@@ -330,4 +330,10 @@ export class GiteeClient extends HostingClientBase<GiteeConfig, GiteeRawClient> 
     return new Promise(() => { });
   }
 
+  public async listPullRequestFiles(num: number): Promise<any[]> {
+    // TODO
+    this.logger.info(num);
+    return [];
+  }
+
 }

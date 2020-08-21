@@ -32,7 +32,7 @@ import RoleConfig from '../../component/role/config';
 
 export abstract class HostingClientBase<TConfig extends HostingConfigBase, TRawClient> implements IClient {
 
-  private app: Application;
+  protected app: Application;
   protected logger: BotLogger;
 
   protected hostId: number;
@@ -149,6 +149,8 @@ export abstract class HostingClientBase<TConfig extends HostingConfigBase, TRawC
   public abstract async createOrUpdateFile(filePath: string, content: string, commitMessgae: string, branchName: string, cb?: () => void): Promise<void>;
 
   public abstract async newPullRequest(option: CreatePullRequestOption): Promise<void>;
+
+  public abstract async listPullRequestFiles(num: number): Promise<any[]>;
 
   //endregion
 

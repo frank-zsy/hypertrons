@@ -16,7 +16,7 @@ import { Application } from 'egg';
 import RoleConfig from '../../../component/role/config';
 import { LuaVm } from '../../../lua-vm/lua-vm';
 import { luaMethod, luaEvents } from '../../../lua-vm/decorators';
-import { Repo, CreatePullRequestOption } from '../../DataTypes';
+import { Repo, CreatePullRequestOption, RepoFile, RepoDir } from '../../DataTypes';
 import IMConfig from '../../../component/im/config';
 import { IncomingWebhookSendArguments } from '@slack/webhook/dist/IncomingWebhook';
 import * as Nodemailer from 'nodemailer';
@@ -29,6 +29,10 @@ import LabelSetupConfig from '../../../component/label_setup/config';
 import WeeklyReport from '../../helper/weekly-report/weekly-report';
 import { IssueMetaDataFormatRegExp, IssueMetaDataBegin, IssueMetaDataEnd, renderString } from '../../Utils';
 import WeeklyReportConfig from '../../../component/weekly_report/config';
+import requireFromString from 'require-from-string';
+import { merge } from 'lodash';
+import requestretry from 'requestretry';
+import { genPlantUmlUrl } from '../../../../scripts/Utils';
 
 export class LuaService<TConfig extends HostingConfigBase, TRawClient> extends ClientServiceBase<TConfig, TRawClient> {
   private luaSubscribeEvents: Map<any, any[]>;
@@ -329,7 +333,8 @@ export class LuaService<TConfig extends HostingConfigBase, TRawClient> extends C
   }
 
   @luaMethod()
-  protected lua_rendStr(tmp: string, param: object): string {
+  protected lua_rendStr(tmp: string, ...params: object[]): string {
+    const param = merge({}, ...params);
     return renderString(tmp, param);
   }
 
@@ -373,18 +378,33 @@ export class LuaService<TConfig extends HostingConfigBase, TRawClient> extends C
   }
 
   @luaMethod()
-  protected lua_newBranch(newBranchName: string, baseBranchName: string, cb: () => void): void {
-    this.client.newBranch(newBranchName, baseBranchName, cb);
+  protected lua_newBranch(newBranchName: string, baseBranchName: string, cb: () => void): Promise<void> {
+    return this.client.newBranch(newBranchName, baseBranchName, cb);
   }
 
   @luaMethod()
-  protected lua_createOrUpdateFile(filePath: string, content: string, commitMessgae: string, branchName: string, cb: () => void): void {
-    this.client.createOrUpdateFile(filePath, content, commitMessgae, branchName, cb);
+  protected lua_getFileContent(filePath: string, ref: string): Promise<RepoFile | undefined> {
+    return this.client.getFileContent(filePath, ref);
   }
 
   @luaMethod()
-  protected lua_newPullRequest(option: CreatePullRequestOption): void {
-    this.client.newPullRequest(option);
+  protected lua_getDirectoryContent(dirPath: string, ref: string): Promise<RepoDir[] | undefined> {
+    return this.client.getDirectoryContent(dirPath, ref);
+  }
+
+  @luaMethod()
+  protected lua_createOrUpdateFile(filePath: string, content: string, commitMessgae: string, branchName: string, cb: () => void): Promise<void> {
+    return this.client.createOrUpdateFile(filePath, content, commitMessgae, branchName, cb);
+  }
+
+  @luaMethod()
+  protected lua_newPullRequest(option: CreatePullRequestOption): Promise<void> {
+    return this.client.newPullRequest(option);
+  }
+
+  @luaMethod()
+  protected lua_listPullRequestFiles(num: number): Promise<any[]> {
+    return this.client.listPullRequestFiles(num);
   }
 
   @luaMethod()
@@ -446,6 +466,37 @@ export class LuaService<TConfig extends HostingConfigBase, TRawClient> extends C
       this.client.getFullName(),
     );
     this.client.runCI(configName, pullNumber);
+  }
+
+  @luaMethod()
+  protected async lua_runJsCode(code: string, ...params: any[]): Promise<any> {
+    try {
+      let func = requireFromString(code);
+      if (func.default) {
+        func = func.default;
+      }
+      return await func(...params);
+    } catch (e) {
+      this.logger.error('Error when exec js code, err=', e.message);
+      return JSON.stringify({ err: e.message });
+    }
+  }
+
+  @luaMethod()
+  protected async lua_requestUrl(options: any): Promise<any> {
+    return new Promise(resolve => {
+      requestretry(options, (err, _res, body) => {
+        if (err) {
+          return resolve({});
+        }
+        resolve(body);
+      });
+    });
+  }
+
+  @luaMethod()
+  protected lua_generateUmlUrl(content: string): string {
+    return genPlantUmlUrl(content);
   }
 
   @luaMethod()
