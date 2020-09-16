@@ -42,7 +42,7 @@ export class GitLabClient extends HostingClientBase<GitLabConfig, Gitlab> {
   public async getFileContent(path: string, ref?: string): Promise<RepoFile | undefined> {
     const res: any = await this.rawClient.RepositoryFiles.show(this.id, path, ref ?? 'master');
     if (res.content && res.encoding === 'base64') {
-      res.content = Buffer.from(res.content, 'base64').toString('ascii');
+      res.content = Buffer.from(res.content, 'base64').toString();
       delete res.encoding;
     }
     return res;

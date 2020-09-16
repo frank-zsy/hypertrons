@@ -131,7 +131,7 @@ export class GitHubClient extends HostingClientBase<GitHubConfig, Octokit> {
       }
       res = res.data;
       if (res.content && res.encoding === 'base64') {
-        res.content = Buffer.from(res.content, 'base64').toString('ascii');
+        res.content = Buffer.from(res.content, 'base64').toString();
         delete res.encoding;
       }
       return res;
