@@ -28,4 +28,6 @@ export default (app: Application) => {
   router.get('/component/:installationName/:name/:version', controller.component.getComponentConfigByNameVersion);
 
   router.get('/file-checker/:installationName/:owner/:repo', controller.fileChecker.get);
+
+  router.get('/svgrenderer/:installationName/:owner/:repo', controller.svgrenderer.get);
 };
