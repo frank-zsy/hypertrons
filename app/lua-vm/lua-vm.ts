@@ -176,7 +176,7 @@ export class LuaVm {
             // lua_next will push key and value on stack
             const value = this.getStackValue(L, -1);
             const key = this.getStackValue(L, -2);
-            if (value && key) {
+            if (value !== undefined && key !== undefined) {
               ret[key] = value;
             }
             lua.lua_pop(L, 1);
