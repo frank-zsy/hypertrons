@@ -63,29 +63,40 @@ export class GitHubApp extends HostingBase<GitHubConfig, GitHubClient, Octokit> 
       auth: `Bearer ${this.githubApp.getSignedJsonWebToken()}`,
     });
     const installations = await octokit.apps.listInstallations();
-    const repos = await Promise.all(installations.data.map(async i => {
-      const installationAccessToken = await this.githubApp.getInstallationAccessToken({
-        installationId: i.id,
-      });
-      const octokit = new Octokit({
-        auth: `Bearer ${installationAccessToken}`,
-      });
-      const repos = await octokit.apps.listRepos();
-      return {
-        id: i.id,
-        repos: repos.data.repositories,
-      };
-    }));
-    const ret: Array<{fullName: string, payload: any}> = [];
-    repos.forEach(repo => {
-      repo.repos.forEach(r => {
-        ret.push({
-          fullName: r.full_name,
-          payload: repo.id,
+    try {
+      const repos = await Promise.all(installations.data.map(async i => {
+        try {
+        const installationAccessToken = await this.githubApp.getInstallationAccessToken({
+          installationId: i.id,
+        });
+        const octokit = new Octokit({
+          auth: `Bearer ${installationAccessToken}`,
+        });
+        const repos = await octokit.apps.listRepos();
+        return {
+          id: i.id,
+          repos: repos.data.repositories,
+        };
+        } catch {
+          return {
+            id: i.id,
+            repos: [],
+          };
+        }
+      }));
+      const ret: Array<{fullName: string, payload: any}> = [];
+      repos.forEach(repo => {
+        repo.repos.forEach(r => {
+          ret.push({
+            fullName: r.full_name,
+            payload: repo.id,
+          });
         });
       });
-    });
-    return ret;
+      return ret;
+    } catch {
+      return [];
+    }
   }
 
   public async addRepo(name: string, payload: any): Promise<void> {

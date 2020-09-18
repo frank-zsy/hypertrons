@@ -30,4 +30,6 @@ export default (app: Application) => {
   router.get('/file-checker/:installationName/:owner/:repo', controller.fileChecker.get);
 
   router.get('/svgrenderer/:installationName/:owner/:repo', controller.svgrenderer.get);
+
+  router.get('/data/:installationName/:owner/:repo', controller.data.get);
 };

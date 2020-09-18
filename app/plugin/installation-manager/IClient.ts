@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { RepoEventBase } from '../event-manager/events';
-import { RepoFile } from '../../basic/DataTypes';
+import { RepoFile, Repo } from '../../basic/DataTypes';
 
 export interface IClient {
 
@@ -25,4 +25,5 @@ export interface IClient {
 
   communitySvgImage(): string;
 
+  getRepoData(): Repo;
 }
