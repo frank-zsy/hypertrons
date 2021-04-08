@@ -31,5 +31,7 @@ export default (app: Application) => {
 
   router.get('/svgrenderer/:installationName/:owner/:repo', controller.svgrenderer.get);
 
+  router.get('/htmlrenderer/:installationName/:owner/:repo', controller.htmlrenderer.get);
+
   router.get('/data/:installationName/:owner/:repo', controller.data.get);
 };

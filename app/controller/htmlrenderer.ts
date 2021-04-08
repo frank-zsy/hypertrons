@@ -15,7 +15,7 @@
 import { Controller } from 'egg';
 import { getRepoFullName } from '../basic/Utils';
 
-export default class FileChecker extends Controller {
+export default class HtmlRenderer extends Controller {
   public async get() {
     const { installationName, owner, repo } = this.ctx.params;
     const path = this.ctx.queries.path;
